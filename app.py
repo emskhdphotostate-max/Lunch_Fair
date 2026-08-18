@@ -152,7 +152,7 @@ def new_bill_page():
 
 
 def bills_page(bills):
-    st.header("Tamam Bills")
+    st.header("All Bills")
     term = st.text_input("Search: party, launch ya bill number")
     if term:
         key = term.lower()
