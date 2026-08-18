@@ -1,6 +1,7 @@
-"""Launch Fair Billing System — Streamlit web application.
+"""LedgerFlowPro — Professional Billing System — Streamlit web application.
 
 Configure SUPABASE_URL and SUPABASE_KEY in Streamlit secrets before running.
+Developed & Owned By: Shehzad Kazama
 """
 from datetime import date
 from io import BytesIO
@@ -15,7 +16,7 @@ from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Par
 from supabase import create_client
 
 
-st.set_page_config(page_title="Launch Fair Billing", page_icon="🚢", layout="wide")
+st.set_page_config(page_title="LedgerFlowPro — Professional Billing System", page_icon="⚡", layout="wide")
 
 
 def money(value):
@@ -28,13 +29,14 @@ def db_client():
 
 
 def require_login():
-    """Optional shared-password screen for a customer test deployment."""
+    """Optional shared-password screen for security."""
     expected = st.secrets.get("APP_PASSWORD", "")
     if not expected:
         return True
     if st.session_state.get("authenticated"):
         return True
-    st.title("🚢 Launch Fair Billing")
+    st.title("⚡ LedgerFlowPro — Professional Billing System")
+    st.caption("Developed & Owned By: Shehzad Kazama")
     password = st.text_input("Password", type="password")
     if st.button("Open Software", type="primary"):
         if password == expected:
@@ -66,7 +68,8 @@ def pdf_invoice(bill):
     doc = SimpleDocTemplate(output, pagesize=A4, leftMargin=2*cm, rightMargin=2*cm,
                             topMargin=1.5*cm, bottomMargin=1.5*cm)
     styles = getSampleStyleSheet()
-    story = [Paragraph("Launch Fair — Invoice", styles["Title"]), Spacer(1, 12)]
+    story = [Paragraph("LedgerFlowPro — Official Invoice", styles["Title"]), Spacer(1, 4),
+             Paragraph("Developed & Owned By: Shehzad Kazama", styles["Normal"]), Spacer(1, 12)]
     data = [
         ["Bill No.", bill["bill_no"], "Date", bill["date"]],
         ["Party", bill["party"], "Launch", bill["launch"]],
@@ -85,6 +88,9 @@ def pdf_invoice(bill):
     story += [table, Spacer(1, 16)]
     if bill.get("remarks"):
         story.append(Paragraph(f"Remarks: {bill['remarks']}", styles["Normal"]))
+        story.append(Spacer(1, 16))
+    
+    story.append(Paragraph("© 2026 LedgerFlowPro. All rights reserved. Developed & Owned by Shehzad Kazama.", styles["Italic"]))
     doc.build(story)
     return output.getvalue()
 
@@ -222,9 +228,16 @@ def main():
         st.error(f"Database connect nahi ho saka: {error}")
         return
 
-    st.sidebar.title("🚢 Launch Fair")
+    st.sidebar.markdown("## ⚡ LedgerFlowPro")
+    st.sidebar.caption("Professional Billing System")
+    st.sidebar.caption("By Shehzad Kazama")
+    
     page = st.sidebar.radio("Menu", ["Dashboard", "Naya Bill", "Bills", "Payments", "Party Ledger"])
     party_manager()
+    
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("<p style='font-size: 11px; color: gray;'>© 2026 LedgerFlowPro<br>Owned by Shehzad Kazama</p>", unsafe_allow_html=True)
+
     if page == "Dashboard":
         dashboard(bills)
     elif page == "Naya Bill":
