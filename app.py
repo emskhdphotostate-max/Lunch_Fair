@@ -70,7 +70,7 @@ def auth_screen():
     st.title("⚡ LedgerFlowPro — Professional Billing System")
     st.caption("Developed & Owned By: Shehzad Kazama")
 
-    login_tab, signup_tab = st.tabs(["Login", "Naya Account Banayein"])
+    login_tab, signup_tab = st.tabs(["Login", "New Account"])
 
     with login_tab:
         with st.form("login_form"):
@@ -79,41 +79,41 @@ def auth_screen():
             submitted = st.form_submit_button("Login", type="primary")
         if submitted:
             if not email.strip() or not password:
-                st.error("Email aur password dono zaroori hain.")
+                st.error("Email and password are both required.")
             else:
                 try:
                     log_in(email.strip(), password)
                     st.rerun()
                 except Exception:
-                    st.error("Email ya password ghalat hai.")
+                    st.error("Incorrect email or password.")
 
     with signup_tab:
         with st.form("signup_form"):
             new_email = st.text_input("Email", key="signup_email")
-            new_password = st.text_input("Password (kam az kam 6 characters)", type="password", key="signup_pw")
-            confirm_password = st.text_input("Password dobara likhein", type="password", key="signup_pw2")
-            submitted_signup = st.form_submit_button("Account Banayein", type="primary")
+            new_password = st.text_input("Password (at least 6 characters)", type="password", key="signup_pw")
+            confirm_password = st.text_input("Confirm Password", type="password", key="signup_pw2")
+            submitted_signup = st.form_submit_button("Create Account", type="primary")
         if submitted_signup:
             if not new_email.strip() or not new_password:
-                st.error("Email aur password dono zaroori hain.")
+                st.error("Email and password are both required.")
             elif len(new_password) < 6:
-                st.error("Password kam az kam 6 characters ka hona chahiye.")
+                st.error("Password must be at least 6 characters.")
             elif new_password != confirm_password:
-                st.error("Dono passwords match nahi kar rahe.")
+                st.error("Passwords do not match.")
             else:
                 try:
                     status = sign_up(new_email.strip(), new_password)
                     if status == "logged_in":
-                        st.success("Account ban gaya! Aap login ho chuke hain.")
+                        st.success("Account created! You are now logged in.")
                         st.rerun()
                     else:
-                        st.success("Account ban gaya. Apni email check karein aur confirmation link par click karein, phir Login tab se sign in karein.")
+                        st.success("Account created. Please check your email and click the confirmation link, then sign in from the Login tab.")
                 except Exception as error:
                     message = str(error)
                     if "already registered" in message.lower() or "already exists" in message.lower():
-                        st.error("Ye email pehle se registered hai. Login tab use karein.")
+                        st.error("This email is already registered. Please use the Login tab.")
                     else:
-                        st.error(f"Account nahi ban saka: {error}")
+                        st.error(f"Could not create account: {error}")
 
 
 # ---------------------------------------------------------------------------
@@ -195,18 +195,18 @@ def show_bill_table(bills, include_actions=True):
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
     if include_actions and bills:
         choices = {b["bill_no"]: b for b in bills}
-        selected_no = st.selectbox("Invoice download ke liye bill select karein", list(choices), key="invoice_bill")
+        selected_no = st.selectbox("Select a bill to download the invoice", list(choices), key="invoice_bill")
         selected = choices[selected_no]
         st.download_button("Download Invoice PDF", pdf_invoice(selected),
                            file_name=f"Invoice_{selected_no}.pdf", mime="application/pdf")
 
 
 def new_bill_page():
-    st.header("Naya Bill")
-    st.caption("Bill number database se automatic banta hai aur edit nahi ho sakta.")
+    st.header("New Bill")
+    st.caption("The bill number is generated automatically by the database and cannot be edited.")
     names = parties()
     if not names:
-        st.warning("Pehle sidebar se party/customer add karein.")
+        st.warning("Please add a party/customer from the sidebar first.")
         return
     with st.form("new_bill", clear_on_submit=True):
         col1, col2 = st.columns(2)
@@ -215,21 +215,21 @@ def new_bill_page():
         launch = col1.text_input("Launch Name")
         amount = col2.number_input("Bill Amount (Rs.)", min_value=0.0, step=100.0)
         remarks = st.text_input("Remarks")
-        submitted = st.form_submit_button("Bill Add Karein", type="primary")
+        submitted = st.form_submit_button("Add Bill", type="primary")
     if submitted:
         if not launch.strip() or amount <= 0:
-            st.error("Launch Name aur valid Bill Amount zaroori hain.")
+            st.error("Launch Name and a valid Bill Amount are required.")
             return
         result = get_client().table("bills").insert({
             "date": bill_date.isoformat(), "party": party, "launch": launch.strip(),
             "bill_amt": amount, "remarks": remarks.strip(),
         }).execute()
-        st.success(f"Bill {result.data[0]['bill_no']} add ho gaya.")
+        st.success(f"Bill {result.data[0]['bill_no']} added.")
 
 
 def bills_page(bills):
-    st.header("Tamam Bills")
-    term = st.text_input("Search: party, launch ya bill number")
+    st.header("All Bills")
+    term = st.text_input("Search: party, launch, or bill number")
     if term:
         key = term.lower()
         bills = [b for b in bills if key in " ".join(str(b.get(x, "")) for x in ("party", "launch", "bill_no", "remarks")).lower()]
@@ -237,13 +237,13 @@ def bills_page(bills):
 
 
 def payments_page(bills):
-    st.header("Payment Receive")
+    st.header("Receive Payment")
     pending_bills = [b for b in bills if b["pending"] > 0.01]
     if not pending_bills:
-        st.info("Koi pending bill nahi hai.")
+        st.info("There are no pending bills.")
         return
     lookup = {f"{b['bill_no']} — {b['party']} (Pending: {money(b['pending'])})": b for b in pending_bills}
-    selected_label = st.selectbox("Bill select karein", list(lookup))
+    selected_label = st.selectbox("Select a bill", list(lookup))
     bill = lookup[selected_label]
     with st.form("payment", clear_on_submit=True):
         col1, col2 = st.columns(2)
@@ -253,10 +253,10 @@ def payments_page(bills):
         submitted = st.form_submit_button("Save Payment", type="primary")
     if submitted:
         if amount <= 0:
-            st.error("Receive amount zero se zyada honi chahiye.")
+            st.error("Receive amount must be greater than zero.")
             return
         get_client().table("payments").insert({"bill_id": bill["id"], "date": payment_date.isoformat(), "amount": amount, "note": note.strip()}).execute()
-        st.success("Payment save ho gayi.")
+        st.success("Payment saved.")
         st.rerun()
 
 
@@ -265,7 +265,7 @@ def ledger_page(bills):
     names = parties()
     if not names:
         return
-    party = st.selectbox("Party select karein", names)
+    party = st.selectbox("Select a party", names)
     party_bills = [b for b in bills if b["party"] == party]
     total = sum(float(b["bill_amt"]) for b in party_bills)
     received = sum(b["received"] for b in party_bills)
@@ -281,15 +281,15 @@ def party_manager():
         st.divider()
         st.subheader("Parties / Customers")
         with st.form("add_party", clear_on_submit=True):
-            name = st.text_input("Nayi party")
+            name = st.text_input("New Party")
             add = st.form_submit_button("Add Party")
         if add:
             try:
                 get_client().table("parties").insert({"name": name.strip()}).execute()
-                st.success("Party add ho gayi.")
+                st.success("Party added.")
                 st.rerun()
             except Exception:
-                st.error("Party ka naam blank ya duplicate hai.")
+                st.error("Party name is blank or already exists.")
 
 
 def main():
@@ -300,10 +300,10 @@ def main():
     try:
         bills = bills_with_totals()
     except KeyError:
-        st.error("Supabase secrets missing hain. README.md mein setup steps dekhein.")
+        st.error("Supabase secrets are missing. See setup steps in README.md.")
         return
     except Exception as error:
-        st.error(f"Database connect nahi ho saka: {error}")
+        st.error(f"Could not connect to the database: {error}")
         return
 
     st.sidebar.markdown("## ⚡ LedgerFlowPro")
@@ -313,7 +313,7 @@ def main():
     if st.sidebar.button("Logout"):
         log_out()
 
-    page = st.sidebar.radio("Menu", ["Dashboard", "Naya Bill", "Bills", "Payments", "Party Ledger"])
+    page = st.sidebar.radio("Menu", ["Dashboard", "New Bill", "Bills", "Payments", "Party Ledger"])
     party_manager()
 
     st.sidebar.markdown("---")
@@ -321,7 +321,7 @@ def main():
 
     if page == "Dashboard":
         dashboard(bills)
-    elif page == "Naya Bill":
+    elif page == "New Bill":
         new_bill_page()
     elif page == "Bills":
         bills_page(bills)
