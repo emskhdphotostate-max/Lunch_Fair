@@ -23,31 +23,107 @@ def money(value):
     return f"Rs. {float(value or 0):,.0f}"
 
 
-@st.cache_resource
-def db_client():
-    return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+# ---------------------------------------------------------------------------
+# Auth: every browser session gets its own Supabase client stored in
+# st.session_state (NOT st.cache_resource — that would be shared across all
+# visitors, which would leak one user's login into another user's session).
+# ---------------------------------------------------------------------------
+
+def get_client():
+    if "sb_client" not in st.session_state:
+        st.session_state.sb_client = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+    return st.session_state.sb_client
 
 
-def require_login():
-    """Optional shared-password screen for security."""
-    expected = st.secrets.get("APP_PASSWORD", "")
-    if not expected:
-        return True
-    if st.session_state.get("authenticated"):
-        return True
+def current_user():
+    return st.session_state.get("user")
+
+
+def log_in(email, password):
+    client = get_client()
+    result = client.auth.sign_in_with_password({"email": email, "password": password})
+    client.postgrest.auth(result.session.access_token)
+    st.session_state.user = {"id": result.user.id, "email": result.user.email}
+
+
+def sign_up(email, password):
+    client = get_client()
+    result = client.auth.sign_up({"email": email, "password": password})
+    if result.session:
+        client.postgrest.auth(result.session.access_token)
+        st.session_state.user = {"id": result.user.id, "email": result.user.email}
+        return "logged_in"
+    return "confirm_email"
+
+
+def log_out():
+    try:
+        get_client().auth.sign_out()
+    except Exception:
+        pass
+    for key in ("user", "sb_client"):
+        st.session_state.pop(key, None)
+    st.rerun()
+
+
+def auth_screen():
     st.title("⚡ LedgerFlowPro — Professional Billing System")
     st.caption("Developed & Owned By: Shehzad Kazama")
-    password = st.text_input("Password", type="password")
-    if st.button("Open Software", type="primary"):
-        if password == expected:
-            st.session_state.authenticated = True
-            st.rerun()
-        st.error("Password ghalat hai.")
-    return False
 
+    login_tab, signup_tab = st.tabs(["Login", "Naya Account Banayein"])
+
+    with login_tab:
+        with st.form("login_form"):
+            email = st.text_input("Email")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Login", type="primary")
+        if submitted:
+            if not email.strip() or not password:
+                st.error("Email aur password dono zaroori hain.")
+            else:
+                try:
+                    log_in(email.strip(), password)
+                    st.rerun()
+                except Exception:
+                    st.error("Email ya password ghalat hai.")
+
+    with signup_tab:
+        with st.form("signup_form"):
+            new_email = st.text_input("Email", key="signup_email")
+            new_password = st.text_input("Password (kam az kam 6 characters)", type="password", key="signup_pw")
+            confirm_password = st.text_input("Password dobara likhein", type="password", key="signup_pw2")
+            submitted_signup = st.form_submit_button("Account Banayein", type="primary")
+        if submitted_signup:
+            if not new_email.strip() or not new_password:
+                st.error("Email aur password dono zaroori hain.")
+            elif len(new_password) < 6:
+                st.error("Password kam az kam 6 characters ka hona chahiye.")
+            elif new_password != confirm_password:
+                st.error("Dono passwords match nahi kar rahe.")
+            else:
+                try:
+                    status = sign_up(new_email.strip(), new_password)
+                    if status == "logged_in":
+                        st.success("Account ban gaya! Aap login ho chuke hain.")
+                        st.rerun()
+                    else:
+                        st.success("Account ban gaya. Apni email check karein aur confirmation link par click karein, phir Login tab se sign in karein.")
+                except Exception as error:
+                    message = str(error)
+                    if "already registered" in message.lower() or "already exists" in message.lower():
+                        st.error("Ye email pehle se registered hai. Login tab use karein.")
+                    else:
+                        st.error(f"Account nahi ban saka: {error}")
+
+
+# ---------------------------------------------------------------------------
+# App data functions (unchanged logic — Row Level Security in the database
+# now automatically restricts every query below to the logged-in user's own
+# rows, so no extra filtering is needed here).
+# ---------------------------------------------------------------------------
 
 def bills_with_totals():
-    response = db_client().table("bills").select(
+    response = get_client().table("bills").select(
         "id,bill_no,date,party,launch,bill_amt,remarks,payments(id,date,amount,note)"
     ).order("id", desc=True).execute()
     bills = response.data or []
@@ -60,7 +136,7 @@ def bills_with_totals():
 
 
 def parties():
-    return [row["name"] for row in db_client().table("parties").select("name").order("name").execute().data or []]
+    return [row["name"] for row in get_client().table("parties").select("name").order("name").execute().data or []]
 
 
 def pdf_invoice(bill):
@@ -89,7 +165,7 @@ def pdf_invoice(bill):
     if bill.get("remarks"):
         story.append(Paragraph(f"Remarks: {bill['remarks']}", styles["Normal"]))
         story.append(Spacer(1, 16))
-    
+
     story.append(Paragraph("© 2026 LedgerFlowPro. All rights reserved. Developed & Owned by Shehzad Kazama.", styles["Italic"]))
     doc.build(story)
     return output.getvalue()
@@ -144,7 +220,7 @@ def new_bill_page():
         if not launch.strip() or amount <= 0:
             st.error("Launch Name aur valid Bill Amount zaroori hain.")
             return
-        result = db_client().table("bills").insert({
+        result = get_client().table("bills").insert({
             "date": bill_date.isoformat(), "party": party, "launch": launch.strip(),
             "bill_amt": amount, "remarks": remarks.strip(),
         }).execute()
@@ -179,7 +255,7 @@ def payments_page(bills):
         if amount <= 0:
             st.error("Receive amount zero se zyada honi chahiye.")
             return
-        db_client().table("payments").insert({"bill_id": bill["id"], "date": payment_date.isoformat(), "amount": amount, "note": note.strip()}).execute()
+        get_client().table("payments").insert({"bill_id": bill["id"], "date": payment_date.isoformat(), "amount": amount, "note": note.strip()}).execute()
         st.success("Payment save ho gayi.")
         st.rerun()
 
@@ -209,7 +285,7 @@ def party_manager():
             add = st.form_submit_button("Add Party")
         if add:
             try:
-                db_client().table("parties").insert({"name": name.strip()}).execute()
+                get_client().table("parties").insert({"name": name.strip()}).execute()
                 st.success("Party add ho gayi.")
                 st.rerun()
             except Exception:
@@ -217,8 +293,10 @@ def party_manager():
 
 
 def main():
-    if not require_login():
+    if not current_user():
+        auth_screen()
         return
+
     try:
         bills = bills_with_totals()
     except KeyError:
@@ -231,10 +309,13 @@ def main():
     st.sidebar.markdown("## ⚡ LedgerFlowPro")
     st.sidebar.caption("Professional Billing System")
     st.sidebar.caption("By Shehzad Kazama")
-    
+    st.sidebar.markdown(f"**Logged in:** {current_user()['email']}")
+    if st.sidebar.button("Logout"):
+        log_out()
+
     page = st.sidebar.radio("Menu", ["Dashboard", "Naya Bill", "Bills", "Payments", "Party Ledger"])
     party_manager()
-    
+
     st.sidebar.markdown("---")
     st.sidebar.markdown("<p style='font-size: 11px; color: gray;'>© 2026 LedgerFlowPro<br>Owned by Shehzad Kazama</p>", unsafe_allow_html=True)
 
