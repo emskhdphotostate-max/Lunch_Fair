@@ -126,7 +126,7 @@ def show_bill_table(bills, include_actions=True):
 
 
 def new_bill_page():
-    st.header("New Bill")
+    st.header("Naya Bill")
     st.caption("Bill number database se automatic banta hai aur edit nahi ho sakta.")
     names = parties()
     if not names:
@@ -152,7 +152,7 @@ def new_bill_page():
 
 
 def bills_page(bills):
-    st.header("All Bills")
+    st.header("Tamam Bills")
     term = st.text_input("Search: party, launch ya bill number")
     if term:
         key = term.lower()
@@ -232,7 +232,7 @@ def main():
     st.sidebar.caption("Professional Billing System")
     st.sidebar.caption("By Shehzad Kazama")
     
-    page = st.sidebar.radio("Menu", ["Dashboard", "New Bill", "Bills", "Payments", "Party Ledger"])
+    page = st.sidebar.radio("Menu", ["Dashboard", "Naya Bill", "Bills", "Payments", "Party Ledger"])
     party_manager()
     
     st.sidebar.markdown("---")
@@ -240,7 +240,7 @@ def main():
 
     if page == "Dashboard":
         dashboard(bills)
-    elif page == "New Bill":
+    elif page == "Naya Bill":
         new_bill_page()
     elif page == "Bills":
         bills_page(bills)
