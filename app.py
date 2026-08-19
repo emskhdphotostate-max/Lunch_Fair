@@ -148,7 +148,7 @@ def pdf_invoice(bill):
              Paragraph("Developed & Owned By: Shehzad Kazama", styles["Normal"]), Spacer(1, 12)]
     data = [
         ["Bill No.", bill["bill_no"], "Date", bill["date"]],
-        ["Party", bill["party"], "Launch", bill["launch"]],
+        ["Party", bill["party"], "Product / Item Name", bill["launch"]],
         ["Bill Amount", money(bill["bill_amt"]), "Received", money(bill["received"])],
         ["Pending", money(bill["pending"]), "Status", bill["status"]],
     ]
@@ -188,7 +188,7 @@ def dashboard(bills):
 def show_bill_table(bills, include_actions=True):
     rows = [{
         "Bill No.": b["bill_no"], "Date": b["date"], "Party": b["party"],
-        "Launch": b["launch"], "Bill Amount": money(b["bill_amt"]),
+        "Product / Item Name": b["launch"], "Bill Amount": money(b["bill_amt"]),
         "Received": money(b["received"]), "Pending": money(b["pending"]),
         "Status": b["status"], "Remarks": b.get("remarks") or "",
     } for b in bills]
@@ -212,13 +212,13 @@ def new_bill_page():
         col1, col2 = st.columns(2)
         bill_date = col1.date_input("Date", value=date.today())
         party = col2.selectbox("Party / Customer", names)
-        launch = col1.text_input("Launch Name")
+        launch = col1.text_input("Product Name / Item Name")
         amount = col2.number_input("Bill Amount (Rs.)", min_value=0.0, step=100.0)
         remarks = st.text_input("Remarks")
         submitted = st.form_submit_button("Add Bill", type="primary")
     if submitted:
         if not launch.strip() or amount <= 0:
-            st.error("Launch Name and a valid Bill Amount are required.")
+            st.error("Product Name / Item Name and a valid Bill Amount are required.")
             return
         result = get_client().table("bills").insert({
             "date": bill_date.isoformat(), "party": party, "launch": launch.strip(),
