@@ -41,7 +41,13 @@ def money(value):
 
 def get_client():
     if "sb_client" not in st.session_state:
-        st.session_state.sb_client = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+        try:
+            url = os.getenv("SUPABASE_URL") or st.secrets.get("SUPABASE_URL")
+            key = os.getenv("SUPABASE_KEY") or st.secrets.get("SUPABASE_KEY")
+        except Exception:
+            url = os.getenv("SUPABASE_URL")
+            key = os.getenv("SUPABASE_KEY")
+        st.session_state.sb_client = create_client(url, key)
     return st.session_state.sb_client
 
 
