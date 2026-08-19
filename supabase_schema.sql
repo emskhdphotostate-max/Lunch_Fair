@@ -78,3 +78,59 @@ create policy "own payments" on public.payments
 --        update public.bills    set user_id = 'PASTE-YOUR-UUID-HERE' where user_id is null;
 --        update public.payments set user_id = 'PASTE-YOUR-UUID-HERE' where user_id is null;
 -- ---------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------
+-- 5) Per-user bill numbering. Every account now gets its own counter
+--    starting at BILL-0001, instead of everyone sharing one global
+--    counter (which used to make bill numbers jump around between
+--    different users' accounts).
+-- ---------------------------------------------------------------------
+
+alter table public.bills alter column bill_no drop default;
+alter table public.bills drop constraint if exists bills_bill_no_key;
+drop index if exists bills_bill_no_key;
+create unique index if not exists bills_user_bill_no_key on public.bills (user_id, bill_no);
+
+create table if not exists public.user_bill_counters (
+    user_id uuid primary key references auth.users(id) on delete cascade,
+    next_no integer not null default 1
+);
+alter table public.user_bill_counters enable row level security;
+drop policy if exists "own counter" on public.user_bill_counters;
+create policy "own counter" on public.user_bill_counters
+    for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- If any existing account already has bills, carry their counter forward
+-- instead of resetting them back to 0001 (only matters for accounts that
+-- already had bills before this change).
+insert into public.user_bill_counters (user_id, next_no)
+select user_id, coalesce(max(nullif(regexp_replace(bill_no, '\D', '', 'g'), '')::int), 0) + 1
+from public.bills
+where user_id is not null
+group by user_id
+on conflict (user_id) do update set next_no = greatest(public.user_bill_counters.next_no, excluded.next_no);
+
+create or replace function public.assign_bill_no()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    n integer;
+begin
+    insert into public.user_bill_counters (user_id, next_no)
+    values (new.user_id, 2)
+    on conflict (user_id) do update set next_no = public.user_bill_counters.next_no + 1
+    returning next_no - 1 into n;
+
+    new.bill_no := 'BILL-' || lpad(n::text, 4, '0');
+    return new;
+end;
+$$;
+
+drop trigger if exists trg_assign_bill_no on public.bills;
+create trigger trg_assign_bill_no
+    before insert on public.bills
+    for each row execute function public.assign_bill_no();
+
