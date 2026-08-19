@@ -3,17 +3,27 @@
 Configure SUPABASE_URL and SUPABASE_KEY in Streamlit secrets before running.
 Developed & Owned By: Shehzad Kazama
 """
+
+import os
+import streamlit as st
+from supabase import create_client
+
+supabase_url = os.getenv("SUPABASE_URL") or st.secrets.get("SUPABASE_URL")
+supabase_key = os.getenv("SUPABASE_KEY") or st.secrets.get("SUPABASE_KEY")
+
+supabase = create_client(supabase_url, supabase_key)
+
 from datetime import date
 from io import BytesIO
 
 import pandas as pd
-import streamlit as st
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph
-from supabase import create_client
+
 
 
 st.set_page_config(page_title="LedgerFlowPro — Professional Billing System", page_icon="⚡", layout="wide")
