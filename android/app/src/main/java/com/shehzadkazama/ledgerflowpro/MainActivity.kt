@@ -1,93 +1,70 @@
 package com.shehzadkazama.ledgerflowpro
 
 import android.app.Activity
-import android.net.Uri
 import android.os.Bundle
-import android.util.AttributeSet
+import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.FrameLayout
 import android.widget.ProgressBar
+import android.widget.TextView
 
 /**
  * LedgerFlowPro mobile shell.
  *
- * This does NOT re-implement the billing app natively. It loads the same
- * live Streamlit site (already connected to Supabase) inside a full-screen
- * WebView, so the phone app always shows the same live data as the browser
- * version - no separate backend, no data duplication.
+ * Loads the live Streamlit site (already connected to Supabase) inside a
+ * full-screen WebView. If anything fails to set up, the actual error is
+ * shown on screen instead of the app silently closing, so it can be
+ * screenshotted and diagnosed.
  */
 class MainActivity : Activity() {
 
-    private lateinit var webView: WebView
-    private lateinit var progressBar: ProgressBar
-
-    // Change this if you ever redeploy the app under a different URL.
+    private var webView: WebView? = null
     private val appUrl = "https://ledgerflowpro-app.streamlit.app/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            setContentView(R.layout.activity_main)
 
-        val root = FrameLayout(this)
+            val webView = findViewById<WebView>(R.id.webview)
+            val progress = findViewById<ProgressBar>(R.id.progress)
+            this.webView = webView
 
-        webView = WebView(this)
-        root.addView(
-            webView,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-        )
+            val settings: WebSettings = webView.settings
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.databaseEnabled = true
+            settings.cacheMode = WebSettings.LOAD_DEFAULT
+            settings.loadWithOverviewMode = true
+            settings.useWideViewPort = true
+            settings.mediaPlaybackRequiresUserGesture = false
 
-        progressBar = ProgressBar(this, null as AttributeSet?, android.R.attr.progressBarStyleHorizontal)
-        progressBar.max = 100
-        val barParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        )
-        root.addView(progressBar, barParams)
-
-        setContentView(root)
-
-        val settings: WebSettings = webView.settings
-        settings.javaScriptEnabled = true
-        settings.domStorageEnabled = true
-        settings.databaseEnabled = true
-        settings.cacheMode = WebSettings.LOAD_DEFAULT
-        settings.loadWithOverviewMode = true
-        settings.useWideViewPort = true
-        settings.mediaPlaybackRequiresUserGesture = false
-
-        webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                // Keep everything on the same Streamlit host inside the app.
-                val host = url?.let { Uri.parse(it).host } ?: ""
-                return if (host.contains("streamlit.app") || host.contains("supabase")) {
-                    false
-                } else {
-                    false
+            webView.webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                    progress.visibility = View.GONE
                 }
             }
-        }
 
-        webView.webChromeClient = object : WebChromeClient() {
-            override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                progressBar.progress = newProgress
-                progressBar.visibility = if (newProgress >= 100) android.view.View.GONE else android.view.View.VISIBLE
+            webView.webChromeClient = object : WebChromeClient() {
+                override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                    progress.progress = newProgress
+                    progress.visibility = if (newProgress >= 100) View.GONE else View.VISIBLE
+                }
             }
-        }
 
-        webView.loadUrl(appUrl)
+            webView.loadUrl(appUrl)
+        } catch (t: Throwable) {
+            Log.e("LedgerFlowPro", "Crash while starting app", t)
+            showError(t)
+        }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-            webView.goBack()
-            return true
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-}
+    private fun showError(t: Throwable) {
+        val tv = TextView(this)
+        tv.text = "LedgerFlowPro could not start:\n\n" + Log.getStackTraceString(t)
+        tv.setPadding(32, 80, 32, 32)
