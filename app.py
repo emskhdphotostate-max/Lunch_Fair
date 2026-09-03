@@ -202,6 +202,47 @@ def inject_premium_theme():
     /* ---------- Alerts ---------- */
     div[data-baseweb="notification"] { border-radius: 10px; }
 
+    /* ---------- Captions / helper text (was invisible — force visible contrast) ---------- */
+    [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p,
+    .stCaption, .stMarkdown small, small {
+        color: #9AA3BE !important;
+        opacity: 1 !important;
+    }
+
+    /* ---------- Secondary / plain buttons (e.g. "Add Party", "Logout") ---------- */
+    .stButton > button, .stFormSubmitButton > button {
+        background: rgba(255,255,255,0.04) !important;
+        border: 1px solid rgba(232,196,104,0.45) !important;
+        color: #F3DFA0 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+    }
+    .stButton > button:hover, .stFormSubmitButton > button:hover {
+        background: rgba(232,196,104,0.12) !important;
+        border-color: var(--gold) !important;
+        color: #FFFFFF !important;
+    }
+    /* Primary buttons stay on the gold-fill treatment (kept readable, dark text on gold) */
+    .stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"] {
+        color: #17140a !important;
+    }
+
+    /* ---------- Number input +/- steppers (icons were dark-on-dark) ---------- */
+    .stNumberInput button, [data-testid="stNumberInputStepUp"], [data-testid="stNumberInputStepDown"] {
+        background: rgba(255,255,255,0.06) !important;
+        border-color: rgba(232,196,104,0.35) !important;
+    }
+    .stNumberInput svg, [data-testid="stNumberInputStepUp"] svg, [data-testid="stNumberInputStepDown"] svg {
+        fill: #E8C468 !important;
+    }
+
+    /* ---------- General body / markdown / widget label text ---------- */
+    p, span, li, .stMarkdown, .stMarkdown p {
+        color: #DCE1F0;
+    }
+    [data-baseweb="select"] * { color: #F3F5FB !important; }
+    [data-testid="stWidgetLabel"] p { color: var(--text-soft) !important; }
+
     /* ---------- Floating ambient orbs (pure decoration, no clicks) ---------- */
     .lfp-orb {
         position: fixed;
