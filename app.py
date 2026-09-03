@@ -5,6 +5,7 @@ Developed & Owned By: Shehzad Kazama
 """
 
 import os
+import html
 import streamlit as st
 from supabase import create_client
 
@@ -330,37 +331,28 @@ def inject_premium_theme():
         100% { left: 130%; }
     }
 
-    /* Rotating gold light ring around the "Professional Billing System" pill (border-only glow) */
-    .lfp-glow-ring::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        padding: 1.5px;
-        background: conic-gradient(from 0deg, transparent, #E8C468 25%, transparent 50%);
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        animation: lfp-rotate 3.5s linear infinite;
-        pointer-events: none;
+    /* Soft pulsing gold glow — "crystal light" breathing effect around the pill */
+    .lfp-glow-ring {
+        animation: lfp-glow-pulse 2.6s ease-in-out infinite;
     }
-    @keyframes lfp-rotate { to { transform: rotate(360deg); } }
+    @keyframes lfp-glow-pulse {
+        0%, 100% { box-shadow: 0 0 6px rgba(232,196,104,0.15); border-color: rgba(232,196,104,0.35) !important; }
+        50%      { box-shadow: 0 0 16px rgba(232,196,104,0.55), 0 0 28px rgba(232,196,104,0.15); border-color: rgba(232,196,104,0.85) !important; }
+    }
 
-    /* Rotating gold light ring around the login/signup glass card (border-only glow) */
-    div[data-testid="stForm"] { position: relative; }
-    div[data-testid="stForm"]::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: 18px;
-        padding: 1.5px;
-        background: conic-gradient(from 0deg, transparent, #E8C468 20%, transparent 45%);
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        animation: lfp-rotate 5s linear infinite;
-        pointer-events: none;
-        z-index: 2;
+    /* Soft pulsing gold glow around the login/signup glass card */
+    div[data-testid="stForm"] {
+        animation: lfp-card-glow 3.2s ease-in-out infinite;
+    }
+    @keyframes lfp-card-glow {
+        0%, 100% {
+            box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0px rgba(232,196,104,0);
+            border-color: rgba(232,196,104,0.22) !important;
+        }
+        50% {
+            box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 24px rgba(232,196,104,0.35);
+            border-color: rgba(232,196,104,0.55) !important;
+        }
     }
     </style>
     """, unsafe_allow_html=True)
@@ -680,7 +672,8 @@ def main():
         st.error(f"Could not connect to the database: {error}")
         return
 
-    st.sidebar.markdown("""
+    _user_email = html.escape(current_user()['email'])
+    st.sidebar.markdown(f"""
         <div style="text-align:center; padding: 4px 0 12px 0;">
             <div class="lfp-badge-shine" style="
                 display:inline-flex; align-items:center; justify-content:center;
@@ -697,9 +690,9 @@ def main():
             display:flex; align-items:center; gap:8px;
             background:rgba(232,196,104,0.08); border:1px solid rgba(232,196,104,0.25);
             border-radius:10px; padding:9px 12px; font-size:13px; margin-bottom:10px;">
-            <span>👤</span><b style="overflow-wrap:anywhere;">%s</b>
+            <span>👤</span><b style="overflow-wrap:anywhere;">{_user_email}</b>
         </div>
-    """ % current_user()['email'], unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
     if st.sidebar.button("Logout", use_container_width=True):
         log_out()
 
