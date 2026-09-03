@@ -88,17 +88,28 @@ def inject_premium_theme():
     }
     [data-testid="stSidebar"] hr { border-color: rgba(232,196,104,0.18) !important; }
 
-    /* Sidebar menu (radio) styled like a premium nav */
+    /* Sidebar menu (radio) styled like a premium nav — consistent alignment */
     [data-testid="stSidebar"] [role="radiogroup"] {
         display: flex;
         flex-direction: column;
         gap: 4px;
+        margin-top: 6px;
     }
     [data-testid="stSidebar"] [role="radiogroup"] label {
-        padding: 9px 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 10px 14px !important;
         border-radius: 10px;
         transition: all 0.2s ease;
         border: 1px solid transparent;
+        width: 100%;
+    }
+    [data-testid="stSidebar"] [role="radiogroup"] label > div:first-child {
+        display: flex;
+        align-items: center;
+    }
+    [data-testid="stSidebar"] [role="radiogroup"] label p {
+        margin: 0 !important;
     }
     [data-testid="stSidebar"] [role="radiogroup"] label:hover {
         background: rgba(232,196,104,0.08);
@@ -108,6 +119,20 @@ def inject_premium_theme():
     [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
         background: linear-gradient(90deg, rgba(232,196,104,0.22), rgba(232,196,104,0.05));
         border-color: rgba(232,196,104,0.45);
+        position: relative;
+        overflow: hidden;
+    }
+    /* Crystal light sweep across the active menu item */
+    [data-testid="stSidebar"] [role="radiogroup"] label[data-checked="true"]::after,
+    [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked)::after {
+        content: "";
+        position: absolute;
+        top: 0; left: -60%;
+        width: 40%; height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+        transform: skewX(-20deg);
+        animation: lfp-shine-sweep 3.5s ease-in-out infinite;
+        pointer-events: none;
     }
 
     /* Sidebar buttons (logout, add party) */
@@ -283,6 +308,60 @@ def inject_premium_theme():
 
     /* Make sure real content sits above the decorative orbs */
     section.main > div.block-container { position: relative; z-index: 1; }
+
+    /* ---------- Crystal light sweep — moving shine across a surface ---------- */
+    .lfp-badge-shine, .lfp-glow-ring {
+        position: relative;
+        overflow: hidden;
+    }
+    .lfp-badge-shine::after {
+        content: "";
+        position: absolute;
+        top: 0; left: -60%;
+        width: 45%; height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.75), transparent);
+        transform: skewX(-20deg);
+        animation: lfp-shine-sweep 3s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @keyframes lfp-shine-sweep {
+        0%   { left: -60%; }
+        55%  { left: 130%; }
+        100% { left: 130%; }
+    }
+
+    /* Rotating gold light ring around the "Professional Billing System" pill (border-only glow) */
+    .lfp-glow-ring::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1.5px;
+        background: conic-gradient(from 0deg, transparent, #E8C468 25%, transparent 50%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        animation: lfp-rotate 3.5s linear infinite;
+        pointer-events: none;
+    }
+    @keyframes lfp-rotate { to { transform: rotate(360deg); } }
+
+    /* Rotating gold light ring around the login/signup glass card (border-only glow) */
+    div[data-testid="stForm"] { position: relative; }
+    div[data-testid="stForm"]::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 18px;
+        padding: 1.5px;
+        background: conic-gradient(from 0deg, transparent, #E8C468 20%, transparent 45%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        animation: lfp-rotate 5s linear infinite;
+        pointer-events: none;
+        z-index: 2;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -345,14 +424,14 @@ def auth_screen():
     <div class="lfp-orb lfp-orb--blue"></div>
     <div class="lfp-orb lfp-orb--teal"></div>
     <div style="text-align:center; padding-top: 28px; padding-bottom: 6px;">
-        <div style="
+        <div class="lfp-badge-shine" style="
             display:inline-flex; align-items:center; justify-content:center;
             width:64px; height:64px; border-radius:18px;
             background: linear-gradient(135deg, #F3DFA0, #E8C468 55%, #C9962E);
             box-shadow: 0 10px 30px rgba(232,196,104,0.35);
             font-size: 30px; margin-bottom: 14px;">⚡</div>
         <h1 style="margin-bottom:2px; font-size: 2.4rem;">LedgerFlowPro</h1>
-        <div style="
+        <div class="lfp-glow-ring" style="
             display:inline-block; margin-top:4px; padding: 4px 14px;
             border: 1px solid rgba(232,196,104,0.4); border-radius: 999px;
             color:#E8C468; font-size:12px; letter-spacing:2px; font-weight:600;
@@ -602,34 +681,34 @@ def main():
         return
 
     st.sidebar.markdown("""
-        <div style="text-align:center; padding: 6px 0 14px 0;">
-            <div style="
+        <div style="text-align:center; padding: 4px 0 12px 0;">
+            <div class="lfp-badge-shine" style="
                 display:inline-flex; align-items:center; justify-content:center;
                 width:46px; height:46px; border-radius:13px;
                 background: linear-gradient(135deg, #F3DFA0, #E8C468 55%, #C9962E);
-                font-size:22px; margin-bottom:8px;">⚡</div>
-            <h2 style="margin:0; font-size:1.35rem;">LedgerFlowPro</h2>
-            <div style="color:#8B93AC; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; margin-top:2px;">
+                font-size:22px; margin-bottom:10px;">⚡</div>
+            <h2 style="margin:0; font-size:1.35rem; line-height:1.2;">LedgerFlowPro</h2>
+            <div style="color:#8B93AC; font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; margin-top:4px;">
                 Professional Billing System
             </div>
+            <div style="color:#6B7488; font-size:12px; margin-top:8px;">By Shehzad Kazama</div>
         </div>
-    """, unsafe_allow_html=True)
-    st.sidebar.caption("By Shehzad Kazama")
-    st.sidebar.markdown(
-        f"<div style='background:rgba(232,196,104,0.08); border:1px solid rgba(232,196,104,0.25); "
-        f"border-radius:10px; padding:8px 12px; font-size:13px; margin-bottom:10px;'>"
-        f"👤 <b>{current_user()['email']}</b></div>",
-        unsafe_allow_html=True,
-    )
+        <div style="
+            display:flex; align-items:center; gap:8px;
+            background:rgba(232,196,104,0.08); border:1px solid rgba(232,196,104,0.25);
+            border-radius:10px; padding:9px 12px; font-size:13px; margin-bottom:10px;">
+            <span>👤</span><b style="overflow-wrap:anywhere;">%s</b>
+        </div>
+    """ % current_user()['email'], unsafe_allow_html=True)
     if st.sidebar.button("Logout", use_container_width=True):
         log_out()
 
-    st.sidebar.markdown("<div style='margin-top:14px;'></div>", unsafe_allow_html=True)
-    page = st.sidebar.radio("Menu", ["Dashboard", "New Bill", "Bills", "Payments", "Party Ledger"])
+    st.sidebar.markdown("<div style='margin-top:16px; font-weight:600; color:#8B93AC; font-size:12px; letter-spacing:1px; text-transform:uppercase;'>Menu</div>", unsafe_allow_html=True)
+    page = st.sidebar.radio("Menu", ["Dashboard", "New Bill", "Bills", "Payments", "Party Ledger"], label_visibility="collapsed")
     party_manager()
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("<p style='font-size: 11px; color: #8B93AC;'>© 2026 LedgerFlowPro<br>Owned by Shehzad Kazama</p>", unsafe_allow_html=True)
+    st.sidebar.markdown("<p style='font-size: 11px; color: #8B93AC; text-align:center; line-height:1.5;'>© 2026 LedgerFlowPro<br>Owned by Shehzad Kazama</p>", unsafe_allow_html=True)
 
     if page == "Dashboard":
         dashboard(bills)
