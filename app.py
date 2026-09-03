@@ -48,6 +48,7 @@ def inject_premium_theme():
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', 'Poppins', sans-serif;
     }
+    html, body { background: #0B0F1E; }
 
     :root {
         --gold: #E8C468;
@@ -62,6 +63,20 @@ def inject_premium_theme():
     .stApp {
         background: radial-gradient(circle at 15% 15%, #16203a 0%, #0B0F1E 45%, #060810 100%);
     }
+
+    /* ---------- Top toolbar / header bar (was plain white) ---------- */
+    [data-testid="stHeader"] {
+        background: rgba(11,15,30,0.85) !important;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(232,196,104,0.12);
+    }
+    [data-testid="stToolbar"] { right: 12px; }
+    [data-testid="stHeader"] svg { fill: #C9CFE0 !important; }
+    [data-testid="stHeader"] button:hover svg { fill: #E8C468 !important; }
+    [data-testid="stDecoration"] { display: none; }
+    [data-testid="stStatusWidget"] { color: #C9CFE0 !important; }
+    #MainMenu { color: #C9CFE0 !important; }
 
     /* ---------- Headings ---------- */
     h1, h2, h3 {
