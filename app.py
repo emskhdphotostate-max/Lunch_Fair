@@ -124,13 +124,15 @@ def inject_premium_theme():
         border-color: var(--gold);
     }
 
-    /* Sidebar text inputs */
+    /* Sidebar text inputs (e.g. "New Party") — light field, dark readable text */
     [data-testid="stSidebar"] input {
-        background: rgba(255,255,255,0.04) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
-        color: #F3F5FB !important;
+        background: #F3F5FA !important;
+        border: 1px solid rgba(15,23,42,0.15) !important;
+        color: #12141C !important;
+        caret-color: #12141C !important;
         border-radius: 8px !important;
     }
+    [data-testid="stSidebar"] input::placeholder { color: #6B7280 !important; opacity: 1 !important; }
 
     /* ---------- Glass card wrapper for forms ---------- */
     div[data-testid="stForm"] {
@@ -143,17 +145,32 @@ def inject_premium_theme():
         box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
-    /* ---------- Inputs everywhere ---------- */
-    .stTextInput input, .stNumberInput input, .stDateInput input, .stSelectbox div[data-baseweb="select"] {
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.14) !important;
-        color: #F3F5FB !important;
+    /* ---------- Inputs everywhere: light field surface, DARK text so typing is visible ---------- */
+    .stTextInput input, .stNumberInput input, .stDateInput input, .stTextArea textarea,
+    .stSelectbox div[data-baseweb="select"] > div {
+        background: #F3F5FA !important;
+        border: 1px solid rgba(15,23,42,0.15) !important;
+        color: #12141C !important;
+        caret-color: #12141C !important;
         border-radius: 10px !important;
     }
-    .stTextInput input:focus, .stNumberInput input:focus {
+    .stTextInput input::placeholder, .stNumberInput input::placeholder,
+    .stTextArea textarea::placeholder {
+        color: #6B7280 !important;
+        opacity: 1 !important;
+    }
+    .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
         border-color: var(--gold) !important;
         box-shadow: 0 0 0 1px var(--gold) !important;
     }
+    /* Dropdown popover list (party / menu selects) */
+    div[data-baseweb="popover"] li, ul[role="listbox"] li,
+    div[data-baseweb="popover"] div[data-baseweb="menu"] {
+        background: #F3F5FA !important;
+        color: #12141C !important;
+    }
+    div[data-baseweb="popover"] li:hover { background: #E8ECF5 !important; }
+
     label, .stTextInput label, .stNumberInput label, .stDateInput label, .stSelectbox label {
         color: var(--text-soft) !important;
         font-weight: 500 !important;
@@ -240,7 +257,8 @@ def inject_premium_theme():
     p, span, li, .stMarkdown, .stMarkdown p {
         color: #DCE1F0;
     }
-    [data-baseweb="select"] * { color: #F3F5FB !important; }
+    /* Text shown INSIDE the selected value of a dropdown must be dark (light field bg) */
+    .stSelectbox div[data-baseweb="select"] * { color: #12141C !important; }
     [data-testid="stWidgetLabel"] p { color: var(--text-soft) !important; }
 
     /* ---------- Floating ambient orbs (pure decoration, no clicks) ---------- */
