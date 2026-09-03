@@ -203,7 +203,8 @@ def inject_premium_theme():
     }
 
     /* ---------- Primary buttons ---------- */
-    .stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"] {
+    .stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"],
+    .stDownloadButton > button[kind="primary"] {
         background: linear-gradient(135deg, #F3DFA0, #E8C468 55%, #C9962E);
         color: #17140a !important;
         font-weight: 700;
@@ -213,7 +214,8 @@ def inject_premium_theme():
         box-shadow: 0 8px 24px rgba(232,196,104,0.25);
         transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
-    .stButton > button[kind="primary"]:hover, .stFormSubmitButton > button[kind="primary"]:hover {
+    .stButton > button[kind="primary"]:hover, .stFormSubmitButton > button[kind="primary"]:hover,
+    .stDownloadButton > button[kind="primary"]:hover {
         transform: translateY(-1px);
         box-shadow: 0 10px 28px rgba(232,196,104,0.4);
     }
@@ -252,21 +254,22 @@ def inject_premium_theme():
         opacity: 1 !important;
     }
 
-    /* ---------- Secondary / plain buttons (e.g. "Add Party", "Logout") ---------- */
-    .stButton > button, .stFormSubmitButton > button {
+    /* ---------- Secondary / plain buttons (e.g. "Add Party", "Logout", "Download Invoice PDF") ---------- */
+    .stButton > button, .stFormSubmitButton > button, .stDownloadButton > button {
         background: rgba(255,255,255,0.04) !important;
         border: 1px solid rgba(232,196,104,0.45) !important;
         color: #F3DFA0 !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
     }
-    .stButton > button:hover, .stFormSubmitButton > button:hover {
+    .stButton > button:hover, .stFormSubmitButton > button:hover, .stDownloadButton > button:hover {
         background: rgba(232,196,104,0.12) !important;
         border-color: var(--gold) !important;
         color: #FFFFFF !important;
     }
     /* Primary buttons stay on the gold-fill treatment (kept readable, dark text on gold) */
-    .stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"] {
+    .stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"],
+    .stDownloadButton > button[kind="primary"] {
         color: #17140a !important;
     }
 
