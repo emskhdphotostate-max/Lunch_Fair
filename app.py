@@ -34,6 +34,201 @@ def money(value):
 
 
 # ---------------------------------------------------------------------------
+# Premium visual theme — injected once per run. Pure CSS/HTML on top of the
+# existing Streamlit widgets, so none of the app logic above changes.
+# Palette: deep midnight navy + champagne gold, glass panels, soft motion.
+# ---------------------------------------------------------------------------
+
+def inject_premium_theme():
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+    html, body, [class*="css"], .stApp {
+        font-family: 'Inter', 'Poppins', sans-serif;
+    }
+
+    :root {
+        --gold: #E8C468;
+        --gold-soft: #F3DFA0;
+        --navy-deep: #0B0F1E;
+        --navy-mid: #131a2e;
+        --navy-card: rgba(255,255,255,0.045);
+        --text-soft: #C9CFE0;
+    }
+
+    /* ---------- App background ---------- */
+    .stApp {
+        background: radial-gradient(circle at 15% 15%, #16203a 0%, #0B0F1E 45%, #060810 100%);
+    }
+
+    /* ---------- Headings ---------- */
+    h1, h2, h3 {
+        font-family: 'Poppins', sans-serif !important;
+        color: #F3F5FB !important;
+        letter-spacing: 0.2px;
+    }
+    h1 {
+        background: linear-gradient(90deg, #F3DFA0, #E8C468 45%, #C9962E);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800 !important;
+    }
+
+    /* ---------- Sidebar ---------- */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0d1326 0%, #0a0e1c 100%);
+        border-right: 1px solid rgba(232,196,104,0.15);
+    }
+    [data-testid="stSidebar"] * { color: #DCE1F0 !important; }
+    [data-testid="stSidebar"] h2, [data-testid="stSidebar"] .stMarkdown h2 {
+        color: var(--gold) !important;
+        font-weight: 700 !important;
+    }
+    [data-testid="stSidebar"] hr { border-color: rgba(232,196,104,0.18) !important; }
+
+    /* Sidebar menu (radio) styled like a premium nav */
+    [data-testid="stSidebar"] [role="radiogroup"] {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    [data-testid="stSidebar"] [role="radiogroup"] label {
+        padding: 9px 14px !important;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+    [data-testid="stSidebar"] [role="radiogroup"] label:hover {
+        background: rgba(232,196,104,0.08);
+        border-color: rgba(232,196,104,0.25);
+    }
+    [data-testid="stSidebar"] [role="radiogroup"] label[data-checked="true"],
+    [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+        background: linear-gradient(90deg, rgba(232,196,104,0.22), rgba(232,196,104,0.05));
+        border-color: rgba(232,196,104,0.45);
+    }
+
+    /* Sidebar buttons (logout, add party) */
+    [data-testid="stSidebar"] .stButton > button {
+        background: transparent;
+        border: 1px solid rgba(232,196,104,0.4);
+        color: var(--gold) !important;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: rgba(232,196,104,0.12);
+        border-color: var(--gold);
+    }
+
+    /* Sidebar text inputs */
+    [data-testid="stSidebar"] input {
+        background: rgba(255,255,255,0.04) !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        color: #F3F5FB !important;
+        border-radius: 8px !important;
+    }
+
+    /* ---------- Glass card wrapper for forms ---------- */
+    div[data-testid="stForm"] {
+        background: var(--navy-card);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(232,196,104,0.22);
+        border-radius: 18px;
+        padding: 34px 34px 22px 34px !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* ---------- Inputs everywhere ---------- */
+    .stTextInput input, .stNumberInput input, .stDateInput input, .stSelectbox div[data-baseweb="select"] {
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.14) !important;
+        color: #F3F5FB !important;
+        border-radius: 10px !important;
+    }
+    .stTextInput input:focus, .stNumberInput input:focus {
+        border-color: var(--gold) !important;
+        box-shadow: 0 0 0 1px var(--gold) !important;
+    }
+    label, .stTextInput label, .stNumberInput label, .stDateInput label, .stSelectbox label {
+        color: var(--text-soft) !important;
+        font-weight: 500 !important;
+    }
+
+    /* ---------- Primary buttons ---------- */
+    .stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #F3DFA0, #E8C468 55%, #C9962E);
+        color: #17140a !important;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 0.55em 1.4em;
+        box-shadow: 0 8px 24px rgba(232,196,104,0.25);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .stButton > button[kind="primary"]:hover, .stFormSubmitButton > button[kind="primary"]:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 28px rgba(232,196,104,0.4);
+    }
+
+    /* ---------- Tabs (Login / New Account) ---------- */
+    [data-baseweb="tab-list"] { gap: 8px; border-bottom: 1px solid rgba(232,196,104,0.15) !important; }
+    [data-baseweb="tab"] {
+        color: var(--text-soft) !important;
+        font-weight: 600;
+    }
+    [data-baseweb="tab"][aria-selected="true"] {
+        color: var(--gold) !important;
+    }
+    [data-baseweb="tab-highlight"] { background-color: var(--gold) !important; }
+
+    /* ---------- Metrics ---------- */
+    [data-testid="stMetric"] {
+        background: var(--navy-card);
+        border: 1px solid rgba(232,196,104,0.18);
+        border-radius: 14px;
+        padding: 14px 16px;
+    }
+    [data-testid="stMetricValue"] { color: var(--gold) !important; font-weight: 700 !important; }
+    [data-testid="stMetricLabel"] { color: var(--text-soft) !important; }
+
+    /* ---------- Dataframes ---------- */
+    [data-testid="stDataFrame"] { border-radius: 12px; overflow: hidden; border: 1px solid rgba(232,196,104,0.15); }
+
+    /* ---------- Alerts ---------- */
+    div[data-baseweb="notification"] { border-radius: 10px; }
+
+    /* ---------- Floating ambient orbs (pure decoration, no clicks) ---------- */
+    .lfp-orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(70px);
+        opacity: 0.35;
+        z-index: 0;
+        pointer-events: none;
+        animation: lfp-float 14s ease-in-out infinite;
+    }
+    .lfp-orb--gold { width: 340px; height: 340px; background: #E8C468; top: -80px; left: -100px; animation-duration: 16s; }
+    .lfp-orb--blue { width: 300px; height: 300px; background: #3E5C9A; bottom: -100px; right: -80px; animation-duration: 18s; animation-delay: 2s; }
+    .lfp-orb--teal { width: 220px; height: 220px; background: #2FA48B; top: 40%; right: 10%; animation-duration: 20s; animation-delay: 4s; opacity: 0.22; }
+
+    @keyframes lfp-float {
+        0%   { transform: translate(0, 0) scale(1); }
+        50%  { transform: translate(30px, -25px) scale(1.08); }
+        100% { transform: translate(0, 0) scale(1); }
+    }
+
+    /* Make sure real content sits above the decorative orbs */
+    section.main > div.block-container { position: relative; z-index: 1; }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
 # Auth: every browser session gets its own Supabase client stored in
 # st.session_state (NOT st.cache_resource — that would be shared across all
 # visitors, which would leak one user's login into another user's session).
@@ -83,53 +278,76 @@ def log_out():
 
 
 def auth_screen():
-    st.title("⚡ LedgerFlowPro — Professional Billing System")
-    st.caption("Developed & Owned By: Shehzad Kazama")
+    inject_premium_theme()
 
-    login_tab, signup_tab = st.tabs(["Login", "New Account"])
+    # Ambient floating orbs + centered brand header
+    st.markdown("""
+    <div class="lfp-orb lfp-orb--gold"></div>
+    <div class="lfp-orb lfp-orb--blue"></div>
+    <div class="lfp-orb lfp-orb--teal"></div>
+    <div style="text-align:center; padding-top: 28px; padding-bottom: 6px;">
+        <div style="
+            display:inline-flex; align-items:center; justify-content:center;
+            width:64px; height:64px; border-radius:18px;
+            background: linear-gradient(135deg, #F3DFA0, #E8C468 55%, #C9962E);
+            box-shadow: 0 10px 30px rgba(232,196,104,0.35);
+            font-size: 30px; margin-bottom: 14px;">⚡</div>
+        <h1 style="margin-bottom:2px; font-size: 2.4rem;">LedgerFlowPro</h1>
+        <div style="
+            display:inline-block; margin-top:4px; padding: 4px 14px;
+            border: 1px solid rgba(232,196,104,0.4); border-radius: 999px;
+            color:#E8C468; font-size:12px; letter-spacing:2px; font-weight:600;
+            text-transform:uppercase;">Professional Billing System</div>
+        <div style="color:#8B93AC; margin-top:12px; font-size:13px;">Developed &amp; Owned By: Shehzad Kazama</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    with login_tab:
-        with st.form("login_form"):
-            email = st.text_input("Email")
-            password = st.text_input("Password", type="password")
-            submitted = st.form_submit_button("Login", type="primary")
-        if submitted:
-            if not email.strip() or not password:
-                st.error("Email and password are both required.")
-            else:
-                try:
-                    log_in(email.strip(), password)
-                    st.rerun()
-                except Exception:
-                    st.error("Incorrect email or password.")
+    left, mid, right = st.columns([1, 1.3, 1])
+    with mid:
+        login_tab, signup_tab = st.tabs(["Login", "New Account"])
 
-    with signup_tab:
-        with st.form("signup_form"):
-            new_email = st.text_input("Email", key="signup_email")
-            new_password = st.text_input("Password (at least 6 characters)", type="password", key="signup_pw")
-            confirm_password = st.text_input("Confirm Password", type="password", key="signup_pw2")
-            submitted_signup = st.form_submit_button("Create Account", type="primary")
-        if submitted_signup:
-            if not new_email.strip() or not new_password:
-                st.error("Email and password are both required.")
-            elif len(new_password) < 6:
-                st.error("Password must be at least 6 characters.")
-            elif new_password != confirm_password:
-                st.error("Passwords do not match.")
-            else:
-                try:
-                    status = sign_up(new_email.strip(), new_password)
-                    if status == "logged_in":
-                        st.success("Account created! You are now logged in.")
+        with login_tab:
+            with st.form("login_form"):
+                email = st.text_input("Email", placeholder="you@company.com")
+                password = st.text_input("Password", type="password", placeholder="••••••••")
+                submitted = st.form_submit_button("Login", type="primary", use_container_width=True)
+            if submitted:
+                if not email.strip() or not password:
+                    st.error("Email and password are both required.")
+                else:
+                    try:
+                        log_in(email.strip(), password)
                         st.rerun()
-                    else:
-                        st.success("Account created. Please check your email and click the confirmation link, then sign in from the Login tab.")
-                except Exception as error:
-                    message = str(error)
-                    if "already registered" in message.lower() or "already exists" in message.lower():
-                        st.error("This email is already registered. Please use the Login tab.")
-                    else:
-                        st.error(f"Could not create account: {error}")
+                    except Exception:
+                        st.error("Incorrect email or password.")
+
+        with signup_tab:
+            with st.form("signup_form"):
+                new_email = st.text_input("Email", key="signup_email", placeholder="you@company.com")
+                new_password = st.text_input("Password (at least 6 characters)", type="password", key="signup_pw", placeholder="••••••••")
+                confirm_password = st.text_input("Confirm Password", type="password", key="signup_pw2", placeholder="••••••••")
+                submitted_signup = st.form_submit_button("Create Account", type="primary", use_container_width=True)
+            if submitted_signup:
+                if not new_email.strip() or not new_password:
+                    st.error("Email and password are both required.")
+                elif len(new_password) < 6:
+                    st.error("Password must be at least 6 characters.")
+                elif new_password != confirm_password:
+                    st.error("Passwords do not match.")
+                else:
+                    try:
+                        status = sign_up(new_email.strip(), new_password)
+                        if status == "logged_in":
+                            st.success("Account created! You are now logged in.")
+                            st.rerun()
+                        else:
+                            st.success("Account created. Please check your email and click the confirmation link, then sign in from the Login tab.")
+                    except Exception as error:
+                        message = str(error)
+                        if "already registered" in message.lower() or "already exists" in message.lower():
+                            st.error("This email is already registered. Please use the Login tab.")
+                        else:
+                            st.error(f"Could not create account: {error}")
 
 
 # ---------------------------------------------------------------------------
@@ -309,6 +527,8 @@ def party_manager():
 
 
 def main():
+    inject_premium_theme()
+
     if not current_user():
         auth_screen()
         return
@@ -322,18 +542,35 @@ def main():
         st.error(f"Could not connect to the database: {error}")
         return
 
-    st.sidebar.markdown("## ⚡ LedgerFlowPro")
-    st.sidebar.caption("Professional Billing System")
+    st.sidebar.markdown("""
+        <div style="text-align:center; padding: 6px 0 14px 0;">
+            <div style="
+                display:inline-flex; align-items:center; justify-content:center;
+                width:46px; height:46px; border-radius:13px;
+                background: linear-gradient(135deg, #F3DFA0, #E8C468 55%, #C9962E);
+                font-size:22px; margin-bottom:8px;">⚡</div>
+            <h2 style="margin:0; font-size:1.35rem;">LedgerFlowPro</h2>
+            <div style="color:#8B93AC; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; margin-top:2px;">
+                Professional Billing System
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
     st.sidebar.caption("By Shehzad Kazama")
-    st.sidebar.markdown(f"**Logged in:** {current_user()['email']}")
-    if st.sidebar.button("Logout"):
+    st.sidebar.markdown(
+        f"<div style='background:rgba(232,196,104,0.08); border:1px solid rgba(232,196,104,0.25); "
+        f"border-radius:10px; padding:8px 12px; font-size:13px; margin-bottom:10px;'>"
+        f"👤 <b>{current_user()['email']}</b></div>",
+        unsafe_allow_html=True,
+    )
+    if st.sidebar.button("Logout", use_container_width=True):
         log_out()
 
+    st.sidebar.markdown("<div style='margin-top:14px;'></div>", unsafe_allow_html=True)
     page = st.sidebar.radio("Menu", ["Dashboard", "New Bill", "Bills", "Payments", "Party Ledger"])
     party_manager()
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("<p style='font-size: 11px; color: gray;'>© 2026 LedgerFlowPro<br>Owned by Shehzad Kazama</p>", unsafe_allow_html=True)
+    st.sidebar.markdown("<p style='font-size: 11px; color: #8B93AC;'>© 2026 LedgerFlowPro<br>Owned by Shehzad Kazama</p>", unsafe_allow_html=True)
 
     if page == "Dashboard":
         dashboard(bills)
